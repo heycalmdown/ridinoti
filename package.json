@@ -1,0 +1,17 @@
+{
+  "name": "ridinoti",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "lodash": "^4.14.1",
+    "superagent-bluebird-promise": "^3.0.2",
+    "telegram-promise": "^1.2.1"
+  }
+}
