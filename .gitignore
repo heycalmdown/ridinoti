@@ -1,5 +1,6 @@
 .pushed
 config.json
+.nvmrc
 
 # Logs
 logs

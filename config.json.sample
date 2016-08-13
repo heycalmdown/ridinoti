@@ -2,5 +2,8 @@
   "TELEGRAM_TOKEN": "000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
   "TELEGRAM_ID": "00000000",
   "RIDI_ID": "hahaha",
-  "RIDI_PW": "hohoho"
+  "RIDI_PW": "hohoho",
+  "accessKeyId": "omit if you don't need S3",
+  "secretAccessKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "region": "only for S3"
 }

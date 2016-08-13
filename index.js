@@ -1,8 +1,8 @@
 const superagent = require('superagent-bluebird-promise');
 const url = require('url');
 const _ = require('lodash');
-const fs = require('bluebird').promisifyAll(require('fs'));
 const CONFIG = require('./config.json');
+const s = CONFIG.accessKeyId && require('./s3') || require('./fs');
 
 const request = superagent.agent();
 const api = new (require('telegram-promise'))(CONFIG.TELEGRAM_TOKEN);
@@ -10,8 +10,6 @@ const api = new (require('telegram-promise'))(CONFIG.TELEGRAM_TOKEN);
 const base = (url) => url.startsWith('http') && url || 'https://ridibooks.com' + url;
 const strip = (message) => message.replace(/\<p\>/, '').replace('\<\/p\>', '');
 const sideEffect = (fn) => (o => { fn(o); return o });
-const read = (name, def) => fs.readFileAsync(name, 'utf-8').then(JSON.parse).catch(() => def);
-const write = (name, data) => fs.writeFileAsync(name, JSON.stringify(data));
 
 function push(item) {
   const text = `${strip(item.message)}\n${base(item.landingUrl)}`;
@@ -27,15 +25,14 @@ function fetch(limit) {
 }
 
 exports.handler = (event, context, callback) => {
-  read('/tmp/.pushed', []).then(pushed => {
-    return fetch(10).map(JSON.parse).filter(item => !_.includes(pushed, item.itemId))
+  s.read('.pushed', []).then(pushed => {
+    fetch(20).map(JSON.parse).filter(item => !_.includes(pushed, item.itemId))
       .map(sideEffect(push)).then(o => {
-        write('/tmp/.pushed', pushed.concat(_.map(o, 'itemId')).slice(0, 100));
-        return o;
+        s.write('.pushed', pushed.concat(_.map(o, 'itemId')).slice(0, 100));
       });
-  }).then(pushed => callback(null, pushed.length), callback);
+  }).then(callback, callback);
 };
 
 if (!module.parent) {
-  exports.handler(null, null, () => {});
+  exports.handler(null, null, (e) => e && console.log(e));
 }
