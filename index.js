@@ -13,8 +13,8 @@ const sideEffect = (fn) => (o => { fn(o); return o });
 const read = (name, def) => fs.readFileAsync(name, 'utf-8').then(JSON.parse).catch(() => def);
 const write = (name, data) => fs.writeFileAsync(name, JSON.stringify(data));
 
-function push({message, landingUrl}) {
-  const text = `${strip(message)}\n${base(landingUrl)}`;
+function push(item) {
+  const text = `${strip(item.message)}\n${base(item.landingUrl)}`;
   return api.sendMessage({chat_id: CONFIG.TELEGRAM_ID, text, parse_mode: 'HTML'});
 }
 
@@ -26,10 +26,16 @@ function fetch(limit) {
     .then(res => res.body.notifications);
 }
 
-read('.pushed', []).then(pushed => {
-  fetch(100).map(JSON.parse).filter(item => !pushed.includes(item.itemId))
-    .map(sideEffect(push))
-    .then(o => {
-      write('.pushed', pushed.concat(_.map(o, 'itemId')).slice(0, 100));
-    })
-});
+exports.handler = (event, context, callback) => {
+  read('/tmp/.pushed', []).then(pushed => {
+    return fetch(10).map(JSON.parse).filter(item => !_.includes(pushed, item.itemId))
+      .map(sideEffect(push)).then(o => {
+        write('/tmp/.pushed', pushed.concat(_.map(o, 'itemId')).slice(0, 100));
+        return o;
+      });
+  }).then(pushed => callback(null, pushed.length), callback);
+};
+
+if (!module.parent) {
+  exports.handler(null, null, () => {});
+}
